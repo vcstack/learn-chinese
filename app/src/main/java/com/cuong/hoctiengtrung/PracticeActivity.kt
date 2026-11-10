@@ -1,7 +1,6 @@
 package com.cuong.hoctiengtrung
 
 import android.app.Activity
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -11,6 +10,7 @@ import android.widget.TextView
 import com.cuong.hoctiengtrung.data.LessonRepo
 import com.cuong.hoctiengtrung.data.Word
 import com.cuong.hoctiengtrung.tts.TtsManager
+import com.cuong.hoctiengtrung.tts.VoiceGuide
 
 class PracticeActivity : Activity() {
 
@@ -68,7 +68,9 @@ class PracticeActivity : Activity() {
         }
         btnFlashSpeak.setOnClickListener {
             val c = cards[cardIndex % cards.size]
-            TtsManager.speak(this, c.zh)
+            if (!TtsManager.speak(this, c.zh)) {
+                VoiceGuide.showNoVoiceDialog(this)
+            }
         }
         btnFlashNext.setOnClickListener {
             cardIndex++
@@ -99,18 +101,18 @@ class PracticeActivity : Activity() {
             quizZh.text = correct.zh
             for ((i, b) in optBtns.withIndex()) {
                 b.text = options[i].vi
-                b.setBackgroundColor(Color.parseColor("#E8F5E9"))
+                b.setBackgroundResource(R.drawable.bg_card)
                 b.setOnClickListener {
                     if (quizAnswered) return@setOnClickListener
                     quizAnswered = true
                     total++
                     if (options[i].zh == correct.zh) {
                         score++
-                        b.setBackgroundColor(Color.parseColor("#81C784"))
+                        b.setBackgroundResource(R.drawable.bg_opt_correct)
                     } else {
-                        b.setBackgroundColor(Color.parseColor("#E57373"))
+                        b.setBackgroundResource(R.drawable.bg_opt_wrong)
                         optBtns.first { it.text == correct.vi }
-                            .setBackgroundColor(Color.parseColor("#81C784"))
+                            .setBackgroundResource(R.drawable.bg_opt_correct)
                     }
                     quizScore.text = "Điểm: $score / $total"
                 }

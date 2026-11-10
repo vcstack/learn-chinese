@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="green">#2E7D32</color>
-    <color name="green_light">#E8F5E9</color>
+    <color name="green">#15803D</color>
+    <color name="green_dark">#166534</color>
+    <color name="green_light">#DCFCE7</color>
+    <color name="green_bg">#F0FDF4</color>
+    <color name="green_light2">#BBF7D0</color>
+    <color name="amber">#D97706</color>
+    <color name="amber_bg">#FFFBEB</color>
+    <color name="amber_border">#FDE68A</color>
+    <color name="app_bg">#F7F8F7</color>
+    <color name="card">#FFFFFF</color>
+    <color name="text_primary">#111827</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="divider">#E5E7EB</color>
+    <color name="red">#DC2626</color>
+    <color name="red_bg">#FEF2F2</color>
 </resources>

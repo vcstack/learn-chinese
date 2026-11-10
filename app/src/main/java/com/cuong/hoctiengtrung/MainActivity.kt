@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -32,18 +34,48 @@ class MainActivity : Activity() {
         askNotificationPermission()
 
         val lessons = LessonRepo.load(this)
+
+        // Thống kê ở hero
+        val totalVocab = lessons.sumOf { it.vocab.size }
+        val totalSent = lessons.sumOf { it.sentences.size }
+        findViewById<TextView>(R.id.hero_stats).text =
+            "${lessons.size} bài • $totalVocab từ • $totalSent câu"
+
+        // Banner cảnh báo khi máy chưa có giọng tiếng Trung
+        val banner = findViewById<LinearLayout>(R.id.voice_banner)
+        TtsManager.init(this) {
+            if (!TtsManager.isLangAvailable()) {
+                banner.visibility = View.VISIBLE
+            }
+        }
+        findViewById<Button>(R.id.btn_install_voice).setOnClickListener {
+            TtsManager.openGoogleTtsInstall(this)
+        }
+
         val container = findViewById<LinearLayout>(R.id.lesson_container)
         val inflater = LayoutInflater.from(this)
         for (lesson in lessons) {
             val row = inflater.inflate(R.layout.item_lesson, container, false)
+            row.findViewById<TextView>(R.id.item_badge).text = lesson.id.toString()
             row.findViewById<TextView>(R.id.item_title).text = "Bài ${lesson.id}: ${lesson.title}"
             row.findViewById<TextView>(R.id.item_subtitle).text = lesson.titleVi
+            row.findViewById<TextView>(R.id.item_meta).text =
+                "${lesson.vocab.size} từ • ${lesson.sentences.size} câu • ${lesson.dialogue.size} hội thoại"
             row.setOnClickListener {
                 startActivity(Intent(this, LessonActivity::class.java).apply {
                     putExtra(LessonActivity.EXTRA_LESSON_ID, lesson.id)
                 })
             }
             container.addView(row)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Người dùng quay lại sau khi cài giọng: ẩn banner nếu giờ đã có giọng.
+        TtsManager.init(this) {
+            findViewById<LinearLayout>(R.id.voice_banner).visibility =
+                if (TtsManager.isLangAvailable()) View.GONE else View.VISIBLE
         }
     }
 

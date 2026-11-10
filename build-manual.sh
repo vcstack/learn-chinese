@@ -9,7 +9,7 @@
 #   export KOTLINC_HOME=/đường/dẫn/kotlinc
 #   ./build-manual.sh
 #
-# Kết quả: HocTiengTrung-v1.apk (đã ký bằng release.keystore tự tạo lần đầu).
+# Kết quả: HocTiengTrung-v1.1.apk (đã ký bằng release.keystore tự tạo lần đầu).
 set -e
 cd "$(dirname "$0")"
 
@@ -36,8 +36,8 @@ echo "== aapt2 link =="
   -A app/src/main/assets \
   --min-sdk-version 24 \
   --target-sdk-version 34 \
-  --version-code 1 \
-  --version-name 1.0 \
+  --version-code 2 \
+  --version-name 1.1 \
   build/compiled_res.zip --auto-add-overlay
 
 echo "== kotlinc =="
@@ -67,9 +67,9 @@ if [ ! -f release.keystore ]; then
 fi
 "$BT/apksigner" sign --ks release.keystore \
   --ks-pass pass:cuong123 --key-pass pass:cuong123 \
-  --out HocTiengTrung-v1.apk build/aligned.apk
+  --out HocTiengTrung-v1.1.apk build/aligned.apk
 
 echo "== verify =="
-"$BT/apksigner" verify HocTiengTrung-v1.apk
-"$AAPT2" dump badging HocTiengTrung-v1.apk | head -6
-ls -la HocTiengTrung-v1.apk
+"$BT/apksigner" verify HocTiengTrung-v1.1.apk
+"$AAPT2" dump badging HocTiengTrung-v1.1.apk | head -6
+ls -la HocTiengTrung-v1.1.apk

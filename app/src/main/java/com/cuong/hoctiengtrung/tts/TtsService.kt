@@ -51,13 +51,42 @@ class TtsService : Service() {
         startForeground(NOTIF_ID, buildNotification("Đang phát âm…"))
         tts = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                tts?.language = Locale.CHINESE
-                pendingText?.let { speakNow(it) }
-                pendingText = null
+                if (trySetChineseLanguage()) {
+                    pendingText?.let { speakNow(it) }
+                    pendingText = null
+                } else {
+                    // Máy không có giọng tiếng Trung: dừng, không phát ra tiếng.
+                    stopSelf()
+                }
             } else {
                 stopSelf()
             }
         }
+    }
+
+    /** Thử từng locale tiếng Trung, trả về true nếu có ít nhất một giọng dùng được. */
+    private fun trySetChineseLanguage(): Boolean {
+        val engine = tts ?: return false
+        val locales = listOf(
+            Locale.SIMPLIFIED_CHINESE,
+            Locale.CHINESE,
+            Locale.TRADITIONAL_CHINESE,
+            Locale("zh", "HK"),
+            Locale("zh", "SG")
+        )
+        for (locale in locales) {
+            try {
+                val res = engine.setLanguage(locale)
+                if (res == TextToSpeech.LANG_AVAILABLE ||
+                    res == TextToSpeech.LANG_COUNTRY_AVAILABLE ||
+                    res == TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE
+                ) {
+                    return true
+                }
+            } catch (e: Exception) {
+            }
+        }
+        return false
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

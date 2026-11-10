@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/app_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -9,72 +10,129 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
+        <!-- Nhắc học -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nhắc học (hiện từ vựng lên thanh thông báo)"
-            android:textSize="17sp"
-            android:textStyle="bold" />
+            android:background="@drawable/bg_card"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-        <RadioGroup
-            android:id="@+id/interval_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp">
-
-            <RadioButton
-                android:id="@+id/interval_off"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tắt nhắc học" />
+                android:text="Nhắc học"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-            <RadioButton
-                android:id="@+id/interval_1h"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mỗi 1 giờ" />
+                android:layout_marginTop="4dp"
+                android:text="Hiện từ vựng lên thanh thông báo để ôn theo giờ"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
 
-            <RadioButton
-                android:id="@+id/interval_2h"
+            <RadioGroup
+                android:id="@+id/interval_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mỗi 2 giờ" />
+                android:layout_marginTop="12dp">
 
-            <RadioButton
-                android:id="@+id/interval_4h"
+                <RadioButton
+                    android:id="@+id/interval_off"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Tắt nhắc học"
+                    android:textSize="15sp" />
+
+                <RadioButton
+                    android:id="@+id/interval_1h"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Mỗi 1 giờ"
+                    android:textSize="15sp" />
+
+                <RadioButton
+                    android:id="@+id/interval_2h"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Mỗi 2 giờ"
+                    android:textSize="15sp" />
+
+                <RadioButton
+                    android:id="@+id/interval_4h"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Mỗi 4 giờ"
+                    android:textSize="15sp" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/btn_test_word"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_btn_primary"
+                android:text="Gửi thử 1 từ ngay"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Giọng đọc -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mỗi 4 giờ" />
-        </RadioGroup>
+                android:text="Giọng đọc tiếng Trung"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btn_test_word"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Gửi thử 1 từ ngay" />
+            <TextView
+                android:id="@+id/tts_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Đang kiểm tra…"
+                android:textColor="@color/text_secondary"
+                android:textSize="15sp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Giọng đọc tiếng Trung"
-            android:textSize="17sp"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/btn_install_voice"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_btn_primary"
+                android:text="Cài giọng tiếng Trung"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tts_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Đang kiểm tra…"
-            android:textSize="15sp" />
-
-        <Button
-            android:id="@+id/btn_tts_settings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Mở cài đặt giọng đọc hệ thống" />
+            <Button
+                android:id="@+id/btn_tts_settings"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_btn_outline"
+                android:text="Mở cài đặt giọng đọc hệ thống"
+                android:textAllCaps="false"
+                android:textColor="@color/green"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

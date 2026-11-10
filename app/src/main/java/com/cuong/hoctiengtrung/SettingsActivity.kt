@@ -1,9 +1,7 @@
 package com.cuong.hoctiengtrung
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Button
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -50,18 +48,23 @@ class SettingsActivity : Activity() {
         }
 
         val ttsStatus = findViewById<TextView>(R.id.tts_status)
+        val btnInstallVoice = findViewById<Button>(R.id.btn_install_voice)
         TtsManager.init(this) {
-            ttsStatus.text = if (TtsManager.isLangAvailable()) {
-                "Giọng tiếng Trung: đã sẵn sàng ✓"
+            if (TtsManager.isLangAvailable()) {
+                ttsStatus.text = "Giọng tiếng Trung: đã sẵn sàng ✓\nNút Nghe sẽ phát âm được bình thường."
+                btnInstallVoice.visibility = Button.GONE
             } else {
-                "Chưa có giọng tiếng Trung trên máy. Bấm nút dưới để cài giọng Google TTS."
+                ttsStatus.text = "Chưa có giọng tiếng Trung trên máy nên nút Nghe chưa phát ra tiếng. Bấm nút dưới để cài giọng Google TTS (miễn phí, một lần duy nhất)."
+                btnInstallVoice.visibility = Button.VISIBLE
             }
         }
 
+        btnInstallVoice.setOnClickListener {
+            TtsManager.openGoogleTtsInstall(this)
+        }
+
         findViewById<Button>(R.id.btn_tts_settings).setOnClickListener {
-            // Mở màn hình cài đặt Text-to-speech của hệ thống
-            // (hằng ACTION_TTS_SETTINGS bị ẩn trong SDK công khai nên dùng chuỗi trực tiếp).
-            startActivity(Intent("android.settings.TTS_SETTINGS"))
+            TtsManager.openTtsSettings(this)
         }
     }
 

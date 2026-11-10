@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.cuong.hoctiengtrung.data.LessonRepo
 import com.cuong.hoctiengtrung.tts.TtsManager
+import com.cuong.hoctiengtrung.tts.VoiceGuide
 import com.cuong.hoctiengtrung.util.Prefs
 
 class LessonActivity : Activity() {
@@ -40,7 +41,7 @@ class LessonActivity : Activity() {
             row.findViewById<TextView>(R.id.row_py).text = w.py
             row.findViewById<TextView>(R.id.row_vi).text = w.vi
             row.findViewById<ImageButton>(R.id.row_speak).setOnClickListener {
-                TtsManager.speak(this, w.zh)
+                speakOrGuide(w.zh)
             }
             vocabBox.addView(row)
         }
@@ -52,7 +53,7 @@ class LessonActivity : Activity() {
             row.findViewById<TextView>(R.id.row_py).text = s.py
             row.findViewById<TextView>(R.id.row_vi).text = s.vi
             row.findViewById<ImageButton>(R.id.row_speak).setOnClickListener {
-                TtsManager.speak(this, s.zh)
+                speakOrGuide(s.zh)
             }
             sentBox.addView(row)
         }
@@ -65,7 +66,7 @@ class LessonActivity : Activity() {
             row.findViewById<TextView>(R.id.row_py).text = d.py
             row.findViewById<TextView>(R.id.row_vi).text = d.vi
             row.findViewById<ImageButton>(R.id.row_speak).setOnClickListener {
-                TtsManager.speak(this, d.zh)
+                speakOrGuide(d.zh)
             }
             dlgBox.addView(row)
         }
@@ -82,13 +83,21 @@ class LessonActivity : Activity() {
         }
 
         findViewById<Button>(R.id.btn_play_all).setOnClickListener {
-            TtsManager.speakAll(this, lesson.dialogue.map { it.zh })
+            if (!TtsManager.speakAll(this, lesson.dialogue.map { it.zh })) {
+                VoiceGuide.showNoVoiceDialog(this)
+            }
         }
 
         findViewById<Button>(R.id.btn_practice).setOnClickListener {
             startActivity(Intent(this, PracticeActivity::class.java).apply {
                 putExtra(EXTRA_LESSON_ID, lessonId)
             })
+        }
+    }
+
+    private fun speakOrGuide(text: String) {
+        if (!TtsManager.speak(this, text)) {
+            VoiceGuide.showNoVoiceDialog(this)
         }
     }
 
