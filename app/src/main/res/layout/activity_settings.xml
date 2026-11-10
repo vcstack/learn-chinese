@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nhắc học (hiện từ vựng lên thanh thông báo)"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/interval_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
+
+            <RadioButton
+                android:id="@+id/interval_off"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tắt nhắc học" />
+
+            <RadioButton
+                android:id="@+id/interval_1h"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mỗi 1 giờ" />
+
+            <RadioButton
+                android:id="@+id/interval_2h"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mỗi 2 giờ" />
+
+            <RadioButton
+                android:id="@+id/interval_4h"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mỗi 4 giờ" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/btn_test_word"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Gửi thử 1 từ ngay" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Giọng đọc tiếng Trung"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tts_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Đang kiểm tra…"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/btn_tts_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Mở cài đặt giọng đọc hệ thống" />
+    </LinearLayout>
+</ScrollView>
