@@ -1,63 +1,103 @@
-# Học Tiếng Trung
+# Học Tiếng Trung — React Native (Expo)
 
-App Android học tiếng Trung giao tiếp (20 bài đầu).
-
-## Tải về
-
-Tải file APK bản mới nhất ở [Releases](https://github.com/vcstack/learn-chinese/releases) — bản **v1.1** (`HocTiengTrung-v1.1.apk`). Cài đè lên bản cũ được, không cần gỡ.
+App học tiếng Trung: 20 bài học (200 từ vựng, 100 câu mẫu, 110 dòng hội
+thoại), phát âm TTS, luyện nói (flashcard + trắc nghiệm), nhắc học bằng
+thông báo. Bản viết lại bằng React Native của app Android native v1.1.
 
 ## Tính năng
 
-- **20 bài học**: mỗi bài có Từ vựng, Câu mẫu, Hội thoại — chữ Hán + pinyin + nghĩa tiếng Việt.
-- **Phát âm**: nút 🔊 ở mọi từ/câu/đoạn hội thoại, dùng TextToSpeech tiếng Trung của máy (cần cài giọng tiếng Trung của Google TTS). Có nút chuyển tốc độ Chậm / Vừa, và nút "Nghe cả đoạn".
-- **Luyện nói**: Flashcard (nhìn nghĩa tiếng Việt, tự nói rồi bấm hiện đáp án để kiểm tra) và Trắc nghiệm (chọn nghĩa đúng).
-- **Nhắc học**: AlarmManager gửi thông báo từ vựng ngẫu nhiên theo giờ (mặc định 2 giờ, chỉnh trong Cài đặt: 1/2/4 giờ hoặc tắt). Thông báo có nút "Nghe" để phát âm ngay.
-- **Widget màn hình chính**: hiện 1 từ vựng, nút 🔊 nghe phát âm, nút ↻ đổi từ khác, chạm vào mở app.
+- **Màn hình chính**: danh sách 20 bài học dạng thẻ, header gradient xanh lá
+  với thống kê 20 bài • 200 từ • 100 câu.
+- **Chi tiết bài học**: từ vựng, câu mẫu, hội thoại — mỗi dòng có chữ Hán,
+  pinyin, nghĩa tiếng Việt và nút nghe phát âm. Nút "Nghe cả đoạn",
+  "Luyện nói", đổi tốc độ đọc (chậm/vừa/nhanh).
+- **Phát âm**: dùng `expo-speech`. App tự quét giọng tiếng Trung có sẵn trên
+  máy (`getAvailableVoicesAsync`); nếu máy chưa có giọng (thường gặp trên
+  Xiaomi/MIUI) thì hiện banner/hộp thoại hướng dẫn cài giọng Google TTS thay
+  vì im lặng.
+- **Luyện nói**: Flashcard (hiện nghĩa tiếng Việt → hiện đáp án chữ Hán +
+  pinyin + nút nghe) và Trắc nghiệm (chọn nghĩa đúng trong 4 đáp án, tính
+  điểm).
+- **Nhắc học**: `expo-notifications` lên lịch thông báo mỗi 1/2/4 giờ (mặc
+  định 2 giờ, đổi được trong Cài đặt), mỗi lần nhắc là một từ vựng ngẫu nhiên
+  khác nhau (chữ Hán + pinyin + nghĩa).
+- **Cài đặt**: chọn khoảng nhắc học, gửi thử 1 từ, kiểm tra trạng thái giọng
+  tiếng Trung, nút cài giọng / mở cài đặt TTS hệ thống.
 
-App chỉ dùng API có sẵn của Android + Kotlin stdlib, **không dùng thêm thư viện ngoài** nên build nhanh và ít lỗi.
+## Giao diện
 
-## Có gì mới ở v1.1
+Dùng **React Native Paper (Material Design 3)** với custom theme xanh lá
+(`src/theme.ts` — màu chủ đạo `#15803D`, dùng đúng hệ thống
+`colors.primary / secondary / surface / onSurface` của Paper). Các màn hình
+dùng Appbar, Card, Button, FAB (nút nghe tròn xanh lá), Chip, List,
+SegmentedButtons, RadioButton, Banner, Dialog, Snackbar của Paper — đồng bộ
+toàn app, không hard-code màu lung tung.
 
-- Làm lại giao diện chuyên nghiệp: màn hình chính có banner gradient xanh + thống kê, bài học dạng thẻ, nút Nghe tròn xanh, flashcard/trắc nghiệm/cài đặt dạng thẻ.
-- Sửa lỗi nút Nghe không phát ra tiếng: app thử nhiều giọng tiếng Trung (zh_CN, zh, zh_TW, zh_HK, zh_SG); nếu máy chưa có giọng tiếng Trung thì hiện banner + hộp thoại hướng dẫn cài giọng Google TTS (thường gặp trên máy Xiaomi/MIUI).
-
-## Bản React Native
-
-Ngoài bản Android native này, còn có bản viết lại bằng **React Native (Expo)** với theme React Native Paper (Material Design 3) — xem ở branch [`react-native`](https://github.com/vcstack/learn-chinese/tree/react-native). Bản React Native có đủ 20 bài, phát âm, luyện nói, nhắc học nhưng **không có widget màn hình chính** (Expo managed workflow không hỗ trợ widget).
-
-## Dữ liệu bài học
-
-- File gốc: `data/lessons.json` (20 bài, 200 từ vựng, 100 câu mẫu, 110 dòng hội thoại).
-- File này được copy vào `app/src/main/assets/lessons.json` khi build.
-
-**Thêm bài mới**: sửa `data/lessons.json` theo đúng cấu trúc cũ (id, title, titleVi, vocab/sentences/dialogue, mỗi mục có zh/py/vi), copy đè vào `app/src/main/assets/lessons.json`, rồi build lại.
-
-## Build bằng Gradle (máy thường / Android Studio)
-
-Cần JDK 17 + Android SDK (platform 34, build-tools 34.0.0).
-
-```bash
-./gradlew assembleDebug
-```
-
-APK ở `app/build/outputs/apk/debug/app-debug.apk`.
-
-## Build thủ công (không cần Gradle)
-
-Nếu máy không chạy được Gradle, dùng script `build-manual.sh` (dùng aapt2 + kotlinc + d8 có sẵn trong SDK):
+## Chạy thử
 
 ```bash
-export JAVA_HOME=/đường/dẫn/jdk17
-export ANDROID_HOME=/đường/dẫn/android-sdk
-export KOTLINC_HOME=/đường/dẫn/kotlinc
-./build-manual.sh
+npm install
+npx expo start
 ```
 
-Kết quả: `HocTiengTrung-v1.1.apk` (đã ký). Lần đầu chạy sẽ tự tạo `release.keystore` — **giữ file này cẩn thận, cần nó để ký các bản cập nhật sau** (Android yêu cầu cùng một key cho bản update).
+Mở bằng **Expo Go** trên điện thoại (quét mã QR). Lưu ý: sau khi thêm thư
+viện native (`expo-speech`, `expo-notifications`), Expo Go có thể không đủ
+module — lúc đó cần build bản dev (`eas build --profile development`) rồi
+cài file dev build lên máy.
 
-## Cài lên máy
+## Build APK bằng EAS (cloud)
 
-1. Chép file APK vào điện thoại, mở lên và cho phép "Cài đặt từ nguồn không xác định".
-2. Mở app, cho phép quyền Thông báo để nhận từ vựng nhắc học.
-3. Kiểm tra giọng tiếng Trung: Cài đặt trong app → nếu báo chưa có giọng, bấm "Mở cài đặt giọng đọc hệ thống" để cài giọng Google TTS tiếng Trung.
-4. Thêm widget: nhấn giữ màn hình chính → Widget → "Từ vựng tiếng Trung".
+```bash
+npm install -g eas-cli
+eas login
+eas build -p android --profile preview
+```
+
+File APK tải về từ trang build của EAS. Lần đầu cần chạy `eas build:configure`
+để tạo `eas.json` (chưa có sẵn trong repo).
+
+> **Giới hạn:** build APK **không chạy được trên máy dev hiện tại** vì Gradle
+> bị chặn (sandbox chặn kết nối TCP của Java nên daemon Gradle không giao
+> tiếp được). Vì vậy dùng EAS cloud build hoặc build trên máy của bạn
+> (cần Android Studio + JDK).
+
+## Lưu ý
+
+- **Widget màn hình chính không hỗ trợ trong Expo managed workflow.** App
+  native cũ có widget hiện từ vựng; bản React Native này không có widget
+  (muốn có widget phải chuyển sang bare workflow + viết native module,
+  nằm ngoài phạm vi bản này).
+- **Nhắc học:** Expo không có AlarmManager như Android native. App lên lịch
+  trước 12 lần nhắc tới (mỗi lần một từ khác nhau) và tự nạp thêm mỗi khi
+  mở app. Nếu lâu không mở app, lịch nhắc sẽ hết sau ~1 ngày (ở mức nhắc
+  mỗi 2 giờ) — mở app là được nạp lại.
+- **Phát âm:** chất lượng giọng phụ thuộc giọng TTS tiếng Trung trên máy.
+  Muốn giọng chuẩn cố định thì cần gen file MP3 cho 200 từ + 100 câu
+  (bước sau, không chặn bản này).
+
+## Cấu trúc
+
+```
+App.tsx                    Entry: PaperProvider + Navigation (stack)
+src/
+  theme.ts                 Theme MD3 tùy chỉnh (Paper) + navigation theme
+  types.ts                 Kiểu dữ liệu bài học, tốc độ đọc, khoảng nhắc
+  data/lessons.ts          Nạp assets/lessons.json + hàm tiện ích
+  storage.ts               Lưu cài đặt (AsyncStorage)
+  speech/tts.ts            Phát âm expo-speech + kiểm tra giọng Trung
+  notifications/
+    reminders.ts           Lên lịch / hủy / gửi thử thông báo nhắc học
+  components/
+    SpeakFab.tsx           Nút nghe tròn xanh lá (Paper FAB)
+    EntryRow.tsx           Dòng từ vựng / câu mẫu / hội thoại
+    VoiceBanner.tsx        Banner cảnh báo chưa có giọng Trung
+    NoVoiceDialog.tsx      Hộp thoại hướng dẫn cài giọng
+    PaperHeader.tsx        Header stack bằng Paper Appbar
+  screens/
+    HomeScreen.tsx         Danh sách 20 bài + hero gradient
+    LessonScreen.tsx       Chi tiết bài học
+    PracticeScreen.tsx     Flashcard + trắc nghiệm
+    SettingsScreen.tsx     Cài đặt nhắc học + giọng đọc
+assets/
+  lessons.json             20 bài học (giữ nguyên từ app native)
+```

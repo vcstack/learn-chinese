@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#15803D",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.cuong.hoctiengtrung",
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "icon": "./assets/icon.png",
+    "ios": {
+      "supportsTablet": true
+    },
+    "name": "Học Tiếng Trung",
+    "orientation": "portrait",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#15803D",
+          "icon": "./assets/icon.png"
+        }
+      ]
+    ],
+    "slug": "hoc-tieng-trung",
+    "splash": {
+      "backgroundColor": "#15803D",
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain"
+    },
+    "userInterfaceStyle": "light",
+    "version": "1.0.0",
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

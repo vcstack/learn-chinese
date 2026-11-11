@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">Học Tiếng Trung</string>
-    <string name="widget_name">Từ vựng tiếng Trung</string>
-    <string name="action_settings">Cài đặt</string>
-    <string name="action_test_word">Gửi thử 1 từ</string>
-</resources>
