@@ -2,6 +2,10 @@
 
 App Android học tiếng Trung giao tiếp (20 bài đầu), làm theo vở bài học của Cương.
 
+## Tải về
+
+Tải file APK bản mới nhất ở [Releases](https://github.com/vcstack/learn-chinese/releases) — bản **v1.1** (`HocTiengTrung-v1.1.apk`). Cài đè lên bản cũ được, không cần gỡ.
+
 ## Tính năng
 
 - **20 bài học**: mỗi bài có Từ vựng, Câu mẫu, Hội thoại — chữ Hán + pinyin + nghĩa tiếng Việt.
@@ -11,6 +15,15 @@ App Android học tiếng Trung giao tiếp (20 bài đầu), làm theo vở bà
 - **Widget màn hình chính**: hiện 1 từ vựng, nút 🔊 nghe phát âm, nút ↻ đổi từ khác, chạm vào mở app.
 
 App chỉ dùng API có sẵn của Android + Kotlin stdlib, **không dùng thêm thư viện ngoài** nên build nhanh và ít lỗi.
+
+## Có gì mới ở v1.1
+
+- Làm lại giao diện chuyên nghiệp: màn hình chính có banner gradient xanh + thống kê, bài học dạng thẻ, nút Nghe tròn xanh, flashcard/trắc nghiệm/cài đặt dạng thẻ.
+- Sửa lỗi nút Nghe không phát ra tiếng: app thử nhiều giọng tiếng Trung (zh_CN, zh, zh_TW, zh_HK, zh_SG); nếu máy chưa có giọng tiếng Trung thì hiện banner + hộp thoại hướng dẫn cài giọng Google TTS (thường gặp trên máy Xiaomi/MIUI).
+
+## Bản React Native
+
+Ngoài bản Android native này, còn có bản viết lại bằng **React Native (Expo)** với theme React Native Paper (Material Design 3) — xem ở branch [`react-native`](https://github.com/vcstack/learn-chinese/tree/react-native). Bản React Native có đủ 20 bài, phát âm, luyện nói, nhắc học nhưng **không có widget màn hình chính** (Expo managed workflow không hỗ trợ widget).
 
 ## Dữ liệu bài học
 
@@ -40,7 +53,7 @@ export KOTLINC_HOME=/đường/dẫn/kotlinc
 ./build-manual.sh
 ```
 
-Kết quả: `HocTiengTrung-v1.apk` (đã ký). Lần đầu chạy sẽ tự tạo `release.keystore` — **giữ file này cẩn thận, cần nó để ký các bản cập nhật sau** (Android yêu cầu cùng một key cho bản update).
+Kết quả: `HocTiengTrung-v1.1.apk` (đã ký). Lần đầu chạy sẽ tự tạo `release.keystore` — **giữ file này cẩn thận, cần nó để ký các bản cập nhật sau** (Android yêu cầu cùng một key cho bản update).
 
 ## Cài lên máy
 
