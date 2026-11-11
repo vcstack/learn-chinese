@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { brand, spacing } from '../theme';
@@ -13,7 +13,8 @@ const FADE_MS = 500;
  * Tự mờ dần rồi gọi onFinish để App gỡ nó ra, lộ màn hình chính bên dưới.
  */
 export function SplashScreen({ onFinish }: { onFinish: () => void }) {
-  const opacity = useRef(new Animated.Value(1)).current;
+  // Lazy initializer: tạo Animated.Value một lần, không truy cập ref trong render.
+  const [opacity] = useState(() => new Animated.Value(1));
   const finished = useRef(false);
 
   useEffect(() => {
