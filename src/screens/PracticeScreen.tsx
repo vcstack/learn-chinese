@@ -1,23 +1,37 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Divider, SegmentedButtons, Text, useTheme } from 'react-native-paper';
 import { NoVoiceDialog } from '../components/NoVoiceDialog';
 import { SpeakFab } from '../components/SpeakFab';
-import { getLessonById, getRandomVocabExcluding } from '../data/lessons';
-import { getSpeechRate } from '../storage';
+import {
+  getLessonById,
+  getRandomEntriesExcluding,
+  getRandomEntry,
+  getRandomVocabExcluding,
+} from '../data/lessons';
+import { speak, stopSpeaking } from '../speech/tts';
+import { getSpeechRate, recordPractice, recordSrsAnswer } from '../storage';
 import { radii, spacing } from '../theme';
 import type { RootStackParamList, SpeechRateKey, Vocab } from '../types';
 
 type PracticeNav = NativeStackNavigationProp<RootStackParamList, 'Practice'>;
 type PracticeRoute = RouteProp<RootStackParamList, 'Practice'>;
 
-type Mode = 'flash' | 'quiz';
+type Mode = 'flash' | 'quiz' | 'listen';
 
 interface QuizItem {
   question: Vocab;
   options: Vocab[];
+}
+
+interface ListenItem {
+  /** Từ/câu được phát âm (đáp án đúng). */
+  question: Vocab;
+  options: Vocab[];
+  /** true = đáp án hiển thị chữ Hán, false = đáp án hiển thị nghĩa tiếng Việt. */
+  askZh: boolean;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -46,6 +60,14 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(0);
 
+  // ---- Luyện nghe ----
+  const [listen, setListen] = useState<ListenItem | null>(null);
+  const [listenSelected, setListenSelected] = useState<Vocab | null>(null);
+  const [listenScore, setListenScore] = useState(0);
+  const [listenAnswered, setListenAnswered] = useState(0);
+  // Luân phiên 2 dạng câu hỏi (đáp án chữ Hán / đáp án nghĩa Việt).
+  const askZhRef = useRef(false);
+
   const cards = useMemo(() => (lesson ? shuffle(lesson.vocab) : []), [lesson]);
 
   const newQuiz = useCallback(() => {
@@ -56,6 +78,27 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
     setSelected(null);
   }, [lesson]);
 
+  const playListenQuestion = useCallback(
+    async (item: ListenItem) => {
+      const ok = await speak(item.question.zh, rateKey);
+      if (!ok) setNoVoiceVisible(true);
+    },
+    [rateKey],
+  );
+
+  const newListen = useCallback(() => {
+    const q = getRandomEntry();
+    const distractors = getRandomEntriesExcluding(q, 3);
+    askZhRef.current = !askZhRef.current;
+    const item: ListenItem = {
+      question: q,
+      options: shuffle([q, ...distractors]),
+      askZh: askZhRef.current,
+    };
+    setListen(item);
+    setListenSelected(null);
+  }, []);
+
   useEffect(() => {
     void getSpeechRate().then(setRateKey);
   }, []);
@@ -63,6 +106,22 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
   useEffect(() => {
     if (mode === 'quiz' && !quiz) newQuiz();
   }, [mode, quiz, newQuiz]);
+
+  useEffect(() => {
+    if (mode === 'listen' && !listen) newListen();
+  }, [mode, listen, newListen]);
+
+  // Tự phát âm câu hỏi ngay khi có câu luyện nghe mới.
+  useEffect(() => {
+    if (mode === 'listen' && listen && !listenSelected) {
+      void playListenQuestion(listen);
+    }
+  }, [mode, listen, listenSelected, playListenQuestion]);
+
+  // Đổi chế độ thì dừng phát âm đang chạy (tránh chồng tiếng).
+  useEffect(() => {
+    stopSpeaking();
+  }, [mode]);
 
   if (!lesson) {
     return (
@@ -79,11 +138,41 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
     setFlashIndex((i) => i + 1);
   };
 
+  const revealFlash = () => {
+    setRevealed(true);
+    void recordPractice();
+  };
+
   const chooseOption = (opt: Vocab) => {
     if (!quiz || selected) return;
+    const correct = opt.zh === quiz.question.zh;
     setSelected(opt);
     setAnswered((n) => n + 1);
-    if (opt.zh === quiz.question.zh) setScore((s) => s + 1);
+    if (correct) setScore((s) => s + 1);
+    void recordSrsAnswer(quiz.question.zh, correct);
+    void recordPractice();
+  };
+
+  const chooseListen = (opt: Vocab) => {
+    if (!listen || listenSelected) return;
+    const correct = opt.zh === listen.question.zh;
+    setListenSelected(opt);
+    setListenAnswered((n) => n + 1);
+    if (correct) setListenScore((s) => s + 1);
+    void recordSrsAnswer(listen.question.zh, correct);
+    void recordPractice();
+    // Tự phát lại đáp án đúng để nghe lại và ghi nhớ.
+    const answerZh = listen.question.zh;
+    setTimeout(() => {
+      void speak(answerZh, rateKey).then((ok) => {
+        if (!ok) setNoVoiceVisible(true);
+      });
+    }, 500);
+  };
+
+  const replayListen = () => {
+    if (!listen) return;
+    void playListenQuestion(listen);
   };
 
   return (
@@ -95,6 +184,7 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
           buttons={[
             { value: 'flash', label: 'Flashcard', icon: 'cards-outline' },
             { value: 'quiz', label: 'Trắc nghiệm', icon: 'help-circle-outline' },
+            { value: 'listen', label: 'Luyện nghe', icon: 'headphones' },
           ]}
           style={{ marginBottom: spacing.lg }}
         />
@@ -138,7 +228,7 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
             <Button
               mode="contained"
               icon="eye-outline"
-              onPress={() => setRevealed(true)}
+              onPress={revealFlash}
               disabled={revealed}
               style={styles.mainButton}
               contentStyle={styles.buttonContent}>
@@ -153,7 +243,7 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
               Từ tiếp
             </Button>
           </View>
-        ) : (
+        ) : mode === 'quiz' ? (
           <View>
             {quiz ? (
               <View>
@@ -216,6 +306,91 @@ export function PracticeScreen({ route }: { navigation: PracticeNav; route: Prac
               <Text variant="bodyLarge">Bài này chưa đủ 4 từ để làm trắc nghiệm.</Text>
             )}
           </View>
+        ) : (
+          <View>
+            {listen ? (
+              <View>
+                <Card style={[styles.card, { backgroundColor: theme.colors.surfaceVariant }]} mode="contained">
+                  <Card.Content style={styles.quizQuestion}>
+                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                      Nghe và chọn đáp án đúng:
+                    </Text>
+                    <View style={{ marginTop: spacing.lg }}>
+                      <SpeakFab
+                        text={listen.question.zh}
+                        rateKey={rateKey}
+                        size="large"
+                        onNoVoice={() => setNoVoiceVisible(true)}
+                      />
+                    </View>
+                    <Button
+                      mode="text"
+                      icon="replay"
+                      onPress={replayListen}
+                      style={{ marginTop: spacing.md }}>
+                      Nghe lại
+                    </Button>
+                  </Card.Content>
+                </Card>
+
+                {listen.options.map((opt) => {
+                  const isCorrect = opt.zh === listen.question.zh;
+                  const isSelected = listenSelected?.zh === opt.zh;
+                  let buttonColor: string | undefined;
+                  let textColor: string | undefined;
+                  if (listenSelected && isCorrect) {
+                    buttonColor = theme.colors.primary;
+                    textColor = '#FFFFFF';
+                  } else if (listenSelected && isSelected && !isCorrect) {
+                    buttonColor = theme.colors.error;
+                    textColor = '#FFFFFF';
+                  }
+                  return (
+                    <Button
+                      key={opt.zh}
+                      mode="outlined"
+                      onPress={() => chooseListen(opt)}
+                      disabled={!!listenSelected}
+                      buttonColor={buttonColor}
+                      textColor={textColor}
+                      style={styles.optionButton}
+                      contentStyle={styles.optionContent}>
+                      {listen.askZh ? opt.zh : opt.vi}
+                    </Button>
+                  );
+                })}
+
+                {listenSelected ? (
+                  <Card style={[styles.card, { marginTop: spacing.lg }]} mode="elevated" elevation={1}>
+                    <Card.Content style={styles.listenAnswer}>
+                      <Text variant="titleLarge" style={{ color: theme.colors.primary, fontWeight: '800' }}>
+                        {listen.question.zh}
+                      </Text>
+                      <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                        {listen.question.py} • {listen.question.vi}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                ) : null}
+
+                <Text variant="titleMedium" style={styles.score}>
+                  Điểm: {listenScore}/{listenAnswered}
+                </Text>
+
+                <Button
+                  mode="contained"
+                  icon="arrow-right"
+                  onPress={newListen}
+                  disabled={!listenSelected}
+                  style={styles.mainButton}
+                  contentStyle={styles.buttonContent}>
+                  Câu tiếp
+                </Button>
+              </View>
+            ) : (
+              <Text variant="bodyLarge">Đang chuẩn bị câu luyện nghe…</Text>
+            )}
+          </View>
         )}
       </ScrollView>
 
@@ -252,6 +427,10 @@ const styles = StyleSheet.create({
   quizQuestion: {
     alignItems: 'center',
     paddingVertical: spacing.xxl,
+  },
+  listenAnswer: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
   },
   mainButton: {
     borderRadius: radii.button,

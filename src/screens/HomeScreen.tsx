@@ -6,11 +6,18 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { Avatar, Card, Chip, Icon, IconButton, Text, useTheme } from 'react-native-paper';
 import { getTotals, LESSONS } from '../data/lessons';
+import { getHsk1Totals } from '../data/hsk1';
 import { ensureReminders } from '../notifications/reminders';
 import { getVoiceInfo, initTts, openGoogleTtsInstall } from '../speech/tts';
-import { getIntervalHours } from '../storage';
+import {
+  getDueZhList,
+  getFavorites,
+  getIntervalHours,
+  getStats,
+  recordStudyDay,
+} from '../storage';
 import { brand, radii, spacing } from '../theme';
-import type { Lesson, RootStackParamList } from '../types';
+import type { LearningStats, Lesson, RootStackParamList } from '../types';
 import { VoiceBanner } from '../components/VoiceBanner';
 
 type HomeNav = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -19,18 +26,33 @@ export function HomeScreen({ navigation }: { navigation: HomeNav }) {
   const theme = useTheme();
   const [voiceAvailable, setVoiceAvailable] = useState(true);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [stats, setStats] = useState<LearningStats | null>(null);
+  const [dueCount, setDueCount] = useState(0);
+  const [favCount, setFavCount] = useState(0);
   const totals = getTotals();
+  const hsk1Totals = getHsk1Totals();
 
-  // Mỗi lần mở màn hình chính: kiểm tra lại giọng (người dùng có thể vừa
-  // cài xong giọng rồi quay lại) và nạp thêm lịch nhắc học.
+  // Mỗi lần mở màn hình chính: ghi nhận ngày học (cho streak), kiểm tra
+  // lại giọng (người dùng có thể vừa cài xong giọng rồi quay lại), nạp thêm
+  // lịch nhắc học, và tải lại thống kê / số từ đến hạn ôn / số từ yêu thích.
   useFocusEffect(
     useCallback(() => {
       let alive = true;
       void (async () => {
-        const info = await initTts();
-        if (alive) setVoiceAvailable(info.available);
-        const hours = await getIntervalHours();
+        const [info, hours, freshStats, due, favs] = await Promise.all([
+          initTts(),
+          getIntervalHours(),
+          recordStudyDay(),
+          getDueZhList(),
+          getFavorites(),
+        ]);
         await ensureReminders(hours);
+        if (alive) {
+          setVoiceAvailable(info.available);
+          setStats(freshStats);
+          setDueCount(due.length);
+          setFavCount(favs.length);
+        }
       })();
       return () => {
         alive = false;
@@ -117,9 +139,155 @@ export function HomeScreen({ navigation }: { navigation: HomeNav }) {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <Text variant="titleLarge" style={styles.sectionTitle}>
-            Danh sách bài học
-          </Text>
+          <View>
+            {/* Thống kê + chuỗi ngày học */}
+            <Card style={styles.infoCard} mode="elevated" elevation={2}>
+              <Card.Content>
+                <View style={styles.statsRow}>
+                  <View style={styles.statCell}>
+                    <Text variant="headlineMedium" style={{ color: theme.colors.primary, fontWeight: '800' }}>
+                      🔥 {stats?.streak ?? 0}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                      ngày liên tiếp
+                    </Text>
+                  </View>
+                  <View style={styles.statCell}>
+                    <Text variant="headlineMedium" style={{ color: theme.colors.primary, fontWeight: '800' }}>
+                      {stats?.totalDays ?? 0}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                      ngày đã học
+                    </Text>
+                  </View>
+                  <View style={styles.statCell}>
+                    <Text variant="headlineMedium" style={{ color: theme.colors.primary, fontWeight: '800' }}>
+                      {stats?.totalPracticed ?? 0}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                      lượt đã luyện
+                    </Text>
+                  </View>
+                  <View style={styles.statCell}>
+                    <Text variant="headlineMedium" style={{ color: theme.colors.primary, fontWeight: '800' }}>
+                      {stats?.lessonsOpened.length ?? 0}/{totals.lessons}
+                    </Text>
+                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                      bài đã mở
+                    </Text>
+                  </View>
+                </View>
+              </Card.Content>
+            </Card>
+
+            {/* Ôn tập hôm nay (SRS) */}
+            <Card
+              style={styles.infoCard}
+              mode="elevated"
+              elevation={2}
+              onPress={() => navigation.navigate('Review')}>
+              <Card.Content style={styles.actionRow}>
+                <Avatar.Icon
+                  size={44}
+                  icon="calendar-refresh-outline"
+                  style={{ backgroundColor: theme.colors.primaryContainer }}
+                  color={theme.colors.primary}
+                />
+                <View style={styles.actionTexts}>
+                  <Text variant="titleMedium" style={{ fontWeight: '700' }}>
+                    Ôn tập hôm nay
+                  </Text>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {dueCount > 0
+                      ? `${dueCount} từ đến hạn ôn — bấm để ôn ngay`
+                      : 'Hôm nay không có từ nào cần ôn'}
+                  </Text>
+                </View>
+                <Icon source="chevron-right" size={26} color={theme.colors.onSurfaceVariant} />
+              </Card.Content>
+            </Card>
+
+            {/* Từ yêu thích */}
+            <Card
+              style={styles.infoCard}
+              mode="elevated"
+              elevation={2}
+              onPress={() => navigation.navigate('Favorites')}>
+              <Card.Content style={styles.actionRow}>
+                <Avatar.Icon
+                  size={44}
+                  icon="star"
+                  style={{ backgroundColor: theme.colors.tertiaryContainer }}
+                  color={theme.colors.tertiary}
+                />
+                <View style={styles.actionTexts}>
+                  <Text variant="titleMedium" style={{ fontWeight: '700' }}>
+                    Từ yêu thích
+                  </Text>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {favCount > 0
+                      ? `${favCount} từ đã lưu — bấm để xem lại`
+                      : 'Chưa có từ nào — bấm sao ⭐ ở mỗi từ để lưu'}
+                  </Text>
+                </View>
+                <Icon source="chevron-right" size={26} color={theme.colors.onSurfaceVariant} />
+              </Card.Content>
+            </Card>
+
+            {/* Ngữ pháp HSK1 */}
+            <Card
+              style={styles.infoCard}
+              mode="elevated"
+              elevation={2}
+              onPress={() => navigation.navigate('Grammar')}>
+              <Card.Content style={styles.actionRow}>
+                <Avatar.Icon
+                  size={44}
+                  icon="format-list-numbered"
+                  style={{ backgroundColor: theme.colors.primaryContainer }}
+                  color={theme.colors.primary}
+                />
+                <View style={styles.actionTexts}>
+                  <Text variant="titleMedium" style={{ fontWeight: '700' }}>
+                    Ngữ pháp HSK1
+                  </Text>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {hsk1Totals.grammarLessons} bài • {hsk1Totals.grammarExamples} ví dụ — bấm để học
+                  </Text>
+                </View>
+                <Icon source="chevron-right" size={26} color={theme.colors.onSurfaceVariant} />
+              </Card.Content>
+            </Card>
+
+            {/* Mẫu câu giao tiếp */}
+            <Card
+              style={styles.infoCard}
+              mode="elevated"
+              elevation={2}
+              onPress={() => navigation.navigate('Patterns')}>
+              <Card.Content style={styles.actionRow}>
+                <Avatar.Icon
+                  size={44}
+                  icon="message-text-outline"
+                  style={{ backgroundColor: theme.colors.primaryContainer }}
+                  color={theme.colors.primary}
+                />
+                <View style={styles.actionTexts}>
+                  <Text variant="titleMedium" style={{ fontWeight: '700' }}>
+                    Mẫu câu giao tiếp
+                  </Text>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {hsk1Totals.topics} chủ đề • {hsk1Totals.patterns} mẫu câu — bấm để nói theo
+                  </Text>
+                </View>
+                <Icon source="chevron-right" size={26} color={theme.colors.onSurfaceVariant} />
+              </Card.Content>
+            </Card>
+
+            <Text variant="titleLarge" style={styles.sectionTitle}>
+              Danh sách bài học
+            </Text>
+          </View>
         }
       />
     </View>
@@ -165,6 +333,28 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: spacing.sm,
     marginBottom: spacing.xs,
+  },
+  infoCard: {
+    borderRadius: radii.card,
+    marginTop: spacing.md,
+    backgroundColor: '#FFFFFF',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statCell: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  actionTexts: {
+    flex: 1,
   },
   list: {
     paddingHorizontal: spacing.lg,

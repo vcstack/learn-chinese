@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Card, Text, useTheme } from 'react-native-paper';
+import { Avatar, Card, IconButton, Text, useTheme } from 'react-native-paper';
 import type { SpeechRateKey } from '../types';
 import { radii, spacing } from '../theme';
 import { SpeakFab } from './SpeakFab';
@@ -13,13 +13,26 @@ interface EntryRowProps {
   speaker?: string;
   rateKey: SpeechRateKey;
   onNoVoice: () => void;
+  /** Đã đánh dấu yêu thích chưa (màn hình cha quản lý qua storage). */
+  favorite?: boolean;
+  /** Bấm sao yêu thích — màn hình cha tự cập nhật storage + state. */
+  onToggleFavorite?: () => void;
 }
 
 /**
  * Một dòng Từ vựng / Câu mẫu / Hội thoại: chữ Hán to, pinyin xám,
- * nghĩa tiếng Việt, và nút nghe tròn xanh lá bên phải.
+ * nghĩa tiếng Việt, nút sao yêu thích và nút nghe tròn xanh lá bên phải.
  */
-export function EntryRow({ zh, py, vi, speaker, rateKey, onNoVoice }: EntryRowProps) {
+export function EntryRow({
+  zh,
+  py,
+  vi,
+  speaker,
+  rateKey,
+  onNoVoice,
+  favorite = false,
+  onToggleFavorite,
+}: EntryRowProps) {
   const theme = useTheme();
   return (
     <Card style={styles.card} mode="elevated" elevation={1}>
@@ -43,6 +56,15 @@ export function EntryRow({ zh, py, vi, speaker, rateKey, onNoVoice }: EntryRowPr
             {vi}
           </Text>
         </View>
+        {onToggleFavorite ? (
+          <IconButton
+            icon={favorite ? 'star' : 'star-outline'}
+            iconColor={favorite ? theme.colors.tertiary : theme.colors.onSurfaceVariant}
+            size={24}
+            onPress={onToggleFavorite}
+            style={styles.starButton}
+          />
+        ) : null}
         <SpeakFab text={zh} rateKey={rateKey} onNoVoice={onNoVoice} />
       </Card.Content>
     </Card>
@@ -58,7 +80,7 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
     paddingVertical: spacing.sm,
   },
   texts: {
@@ -71,5 +93,8 @@ const styles = StyleSheet.create({
   },
   vi: {
     marginTop: 2,
+  },
+  starButton: {
+    margin: 0,
   },
 });

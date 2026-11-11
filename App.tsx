@@ -7,7 +7,11 @@ import { getLessonById } from './src/data/lessons';
 import { ensureReminders, setupNotifications } from './src/notifications/reminders';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { LessonScreen } from './src/screens/LessonScreen';
+import { FavoritesScreen } from './src/screens/FavoritesScreen';
+import { GrammarScreen } from './src/screens/GrammarScreen';
+import { PatternsScreen } from './src/screens/PatternsScreen';
 import { PracticeScreen } from './src/screens/PracticeScreen';
+import { ReviewScreen } from './src/screens/ReviewScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { initTts } from './src/speech/tts';
 import { getIntervalHours } from './src/storage';
@@ -51,6 +55,26 @@ export default function App() {
             name="Practice"
             component={PracticeScreen}
             options={{ title: 'Luyện nói' }}
+          />
+          <Stack.Screen
+            name="Favorites"
+            component={FavoritesScreen}
+            options={{ title: 'Từ yêu thích' }}
+          />
+          <Stack.Screen
+            name="Review"
+            component={ReviewScreen}
+            options={{ title: 'Ôn tập hôm nay' }}
+          />
+          <Stack.Screen
+            name="Grammar"
+            component={GrammarScreen}
+            options={{ title: 'Ngữ pháp HSK1' }}
+          />
+          <Stack.Screen
+            name="Patterns"
+            component={PatternsScreen}
+            options={{ title: 'Mẫu câu giao tiếp' }}
           />
           <Stack.Screen
             name="Settings"

@@ -1,15 +1,22 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { EntryRow } from '../components/EntryRow';
 import { NoVoiceDialog } from '../components/NoVoiceDialog';
 import { getLessonById } from '../data/lessons';
 import { speakAll } from '../speech/tts';
-import { getSpeechRate, setSpeechRate } from '../storage';
+import {
+  getFavorites,
+  getSpeechRate,
+  recordLessonOpened,
+  setSpeechRate,
+  toggleFavorite,
+} from '../storage';
 import { radii, spacing } from '../theme';
-import type { RootStackParamList, SpeechRateKey } from '../types';
+import type { RootStackParamList, SpeechRateKey, Vocab } from '../types';
 import { RATE_ORDER, SPEECH_RATES } from '../types';
 
 type LessonNav = NativeStackNavigationProp<RootStackParamList, 'Lesson'>;
@@ -26,10 +33,33 @@ export function LessonScreen({
   const lesson = getLessonById(route.params.lessonId);
   const [rateKey, setRateKey] = useState<SpeechRateKey>('normal');
   const [noVoiceVisible, setNoVoiceVisible] = useState(false);
+  // Tập chữ Hán đã đánh dấu yêu thích (đồng bộ với AsyncStorage).
+  const [favSet, setFavSet] = useState<ReadonlySet<string>>(new Set());
 
   useEffect(() => {
     void getSpeechRate().then(setRateKey);
   }, []);
+
+  // Mỗi lần mở bài: ghi nhận đã mở bài (cho thống kê) + tải lại yêu thích.
+  useFocusEffect(
+    useCallback(() => {
+      if (!lesson) return;
+      void recordLessonOpened(lesson.id);
+      void getFavorites().then((favs) =>
+        setFavSet(new Set(favs.map((f) => f.zh))),
+      );
+    }, [lesson]),
+  );
+
+  const toggleFav = async (entry: Vocab) => {
+    const nowFav = await toggleFavorite(entry);
+    setFavSet((prev) => {
+      const next = new Set(prev);
+      if (nowFav) next.add(entry.zh);
+      else next.delete(entry.zh);
+      return next;
+    });
+  };
 
   if (!lesson) {
     return (
@@ -108,6 +138,8 @@ export function LessonScreen({
               vi={w.vi}
               rateKey={rateKey}
               onNoVoice={() => setNoVoiceVisible(true)}
+              favorite={favSet.has(w.zh)}
+              onToggleFavorite={() => void toggleFav(w)}
             />
           ))}
         </List.Section>
@@ -123,6 +155,8 @@ export function LessonScreen({
               vi={s.vi}
               rateKey={rateKey}
               onNoVoice={() => setNoVoiceVisible(true)}
+              favorite={favSet.has(s.zh)}
+              onToggleFavorite={() => void toggleFav(s)}
             />
           ))}
         </List.Section>
@@ -139,6 +173,8 @@ export function LessonScreen({
               speaker={d.sp}
               rateKey={rateKey}
               onNoVoice={() => setNoVoiceVisible(true)}
+              favorite={favSet.has(d.zh)}
+              onToggleFavorite={() => void toggleFav(d)}
             />
           ))}
         </List.Section>
