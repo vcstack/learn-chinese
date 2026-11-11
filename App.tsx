@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PaperProvider } from 'react-native-paper';
 import { PaperHeader } from './src/components/PaperHeader';
 import { getLessonById } from './src/data/lessons';
@@ -13,6 +13,7 @@ import { PatternsScreen } from './src/screens/PatternsScreen';
 import { PracticeScreen } from './src/screens/PracticeScreen';
 import { ReviewScreen } from './src/screens/ReviewScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { SplashScreen } from './src/screens/SplashScreen';
 import { initTts } from './src/speech/tts';
 import { getIntervalHours } from './src/storage';
 import { navigationTheme, theme } from './src/theme';
@@ -21,8 +22,13 @@ import type { RootStackParamList } from './src/types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  // Splash hiện lúc mở app; Navigation đã mount sẵn bên dưới nên hiệu ứng
+  // mờ dần của Splash sẽ lộ dần màn hình chính, không bị màn hình trắng.
+  const [showSplash, setShowSplash] = useState(true);
+
   useEffect(() => {
     // Khởi động: cấu hình thông báo, quét giọng tiếng Trung, nạp lịch nhắc.
+    // Chạy song song với Splash, không bị Splash chặn hay làm chậm.
     setupNotifications();
     void initTts();
     void getIntervalHours().then((hours) => ensureReminders(hours));
@@ -83,6 +89,7 @@ export default function App() {
           />
         </Stack.Navigator>
       </NavigationContainer>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
     </PaperProvider>
   );
 }
