@@ -1,6 +1,6 @@
 # Học Tiếng Trung
 
-App Android học tiếng Trung giao tiếp (20 bài đầu), làm theo vở bài học của Cương.
+App Android học tiếng Trung giao tiếp (20 bài đầu).
 
 ## Tải về
 
